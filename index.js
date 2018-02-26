@@ -2,7 +2,8 @@ const botSettings = require("./botsettings.json");
 const Discord = require("discord.js");
 const prefix = botSettings.prefix;
 const fs = require('fs');
-const userData = JSON.parse(fs.readFileSync('Data/userData.json', 'utf8'))
+const userData = JSON.parse(fs.readFileSync('Data/userData.json', 'utf8'));
+const botPrefs = JSON.parse(fs.readFileSync('Data/botPrefs.json', 'utf8'));
 
 const bot = new Discord.Client({disableEveryone: true});
 
@@ -29,7 +30,50 @@ bot.on("message", async message => {
     let msg = message.content.toUpperCase();
     let isAdmin = false;
 
-//this is the points system. Comment out starting here to disable points system
+    if(command === `${prefix}botsetup`){
+        let botChannel = message.guild.channels.find('name', 'bot_settings');
+        if(!message.guild.channels.exists('name', 'bot_settings')){
+            message.guild.createChannel("bot_settings", "text")
+            .then(channel => console.log('Created new channel ${channel}'))
+            .then(function(value){
+                botChannel = message.guild.channels.find('name', 'bot_settings');
+                botChannel.send('Hello!.  Welcome to the Bot Setup!.  Here are a series of commands you can use to turn on settings.');
+                botChannel.send(`Use !points on / !points off to enable / disable points.
+                
+Use !admin on / !admin off to enable / disable admin commands.
+
+
+                `);
+            })
+            .catch(console.error);
+        }else{
+            botChannel.send('Hello!.  Welcome to the Bot Setup!.  Here are a series of commands you can use to turn on settings.');
+        }
+        
+    }
+
+    //enable / disable the settings
+
+    if(command === `${prefix}points`){
+        console.log(args);
+        if(args[0] === 'off'){
+            botPrefs.points = false;
+        }
+        if(args[0] === 'on'){
+            botPrefs.points = true;
+        }
+       
+    }
+
+    // end settings section
+    fs.writeFile('Data/botPrefs.json', JSON.stringify(botPrefs), (err) => {
+        if(err) console.error(err);
+    })
+
+    
+//this is the points system.
+if(botPrefs.points === true){
+
     if(command === `${prefix}points`){
         message.channel.send('You have ' + userData[sender.id].messagesSent + ` points ${sender}!`)
     }
@@ -45,8 +89,8 @@ bot.on("message", async message => {
     if(userData[sender.id].messagesSent === 15){
         message.channel.send(`${sender} has leveled up!`)
     }
-
-    //comment out ending here to disable points system.
+}
+    //end of points system
 
     if(!command.startsWith(prefix)) return;
 
@@ -70,6 +114,13 @@ bot.on("message", async message => {
     }
 
     
+})
+//adds users who join the server to the default 'Member' group.  This can be changed to match your default group.
+bot.on('guildMemberAdd', member => {
+
+    let role = member.guild.roles.find('name', 'Member');
+
+member.addRole(role);
 })
 
 bot.login(botSettings.token);
