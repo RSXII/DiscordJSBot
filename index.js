@@ -4,11 +4,14 @@ const prefix = botSettings.prefix;
 const fs = require('fs');
 const userData = JSON.parse(fs.readFileSync('Data/userData.json', 'utf8'));
 const botPrefs = JSON.parse(fs.readFileSync('Data/botPrefs.json', 'utf8'));
+const helpCommands = fs.readFileSync('Data/help.txt', 'utf8');
 
 const bot = new Discord.Client({disableEveryone: true});
 
 bot.on("ready", async () => {
     console.log('Bot is ready! ${bot.user.username}');
+    bot.user.setStatus('Online');
+    bot.user.setGame('Waiting for commands...');
 
     try {
         let link = await bot.generateInvite(["ADMINISTRATOR"]);
@@ -52,10 +55,11 @@ Use !admin on / !admin off to enable / disable admin commands.
         
     }
 
-    //enable / disable the settings
+    //check if admin
+    if(message.member.roles.find("name", "Admin")){
 
+    //enable / disable the settings
     if(command === `${prefix}points`){
-        console.log(args);
         if(args[0] === 'off'){
             botPrefs.points = false;
         }
@@ -65,10 +69,40 @@ Use !admin on / !admin off to enable / disable admin commands.
        
     }
 
+    //the default group members are placed into upon joining.
+    if(command === `${prefix}defaultgroup`){
+        botPrefs.defaultGroup = args.join(' ');
+    }
+    //the server owners youtube page
+    if(command === `${prefix}youtubeset`){
+        botPrefs.youtubeLink = args[0];
+    }
+    if(command === `${prefix}twitchset`){
+        botPrefs.twitchLink = args[0];
+    }
+    if(command === `${prefix}patreonset`){
+        botPrefs.patreon = args[0];
+    }
+    if(command === `${prefix}streamer`){
+        botPrefs.streamerName = args.join(' ');
+    }
+    if(command === `${prefix}liveyt`){
+        message.channel.send(`${botPrefs.streamerName} is live on YouTube!`);
+        message.channel.send(botPrefs.youtubeLink);
+    }
+    if(command === `${prefix}livetw`){
+        message.channel.send(`${botPrefs.streamerName} is live on Twitch!`);
+        message.channel.send(botPrefs.twitchLink);
+    }
     // end settings section
     fs.writeFile('Data/botPrefs.json', JSON.stringify(botPrefs), (err) => {
         if(err) console.error(err);
     })
+
+        if(command === `${prefix}modtest`){
+            message.channel.send('You are an admin!');
+        }
+    }
 
     
 //this is the points system.
@@ -86,7 +120,7 @@ if(botPrefs.points === true){
     fs.writeFile('Data/userData.json', JSON.stringify(userData), (err) => {
         if(err) console.error(err);
     })
-    if(userData[sender.id].messagesSent === 15){
+    if(userData[sender.id].messagesSent === 5000){
         message.channel.send(`${sender} has leveled up!`)
     }
 }
@@ -94,17 +128,11 @@ if(botPrefs.points === true){
 
     if(!command.startsWith(prefix)) return;
 
-    if(message.member.roles.find("name", "SuperAdmin")){
-        if(command === `${prefix}modtest`){
-            message.channel.send('You are an admin!');
-        }
-    }
-
 
     if(command === `${prefix}userinfo`){
         let embed = new Discord.RichEmbed()
         .setAuthor(message.author.username)
-        .setDescription(args)
+        .setDescription("This user has " + userData[sender.id].messagesSent + " points")
         .setColor("#e0e234")
         .setTimestamp();
         message.channel.sendEmbed(embed);
@@ -112,17 +140,30 @@ if(botPrefs.points === true){
     if(command === `${prefix}hello`){
         message.reply("Hello there!");
     }
+    if(command === `${prefix}help`){
+        message.author.sendMessage(helpCommands);
+        message.author.sendMessage(`Also don't forget to support ${botPrefs.streamerName} on
+Patreon ${botPrefs.patreon}
+Youtube ${botPrefs.youtubeLink}
+Twitch ${botPrefs.twitchLink}`);
+    }
 
-    
+    if(command === `${prefix}givesword`){
+        message.channel.send(`Here's a sword ${sender}, try not to hurt yourself.`)
+    }
+    if(command === `${prefix}giveadena`){
+        message.channel.send(`${sender} has gained some adena!`)
+    }
+    if(command === `${prefix}botinfo`){
+        message.channel.send(`Version: ${botPrefs.version} ${botPrefs.developer} Github: ${botPrefs.github}`);
+    }
 })
 //adds users who join the server to the default 'Member' group.  This can be changed to match your default group.
 bot.on('guildMemberAdd', member => {
 
-    let role = member.guild.roles.find('name', 'Member');
+    let role = member.guild.roles.find('name', botPrefs.defaultGroup);
 
 member.addRole(role);
 })
 
 bot.login(botSettings.token);
-
-

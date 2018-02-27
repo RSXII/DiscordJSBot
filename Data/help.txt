@@ -1,0 +1,14 @@
+Commands:
+
+userinfo - This command is used to get information about yourself including how many points you have earned.
+
+points - This will tell you how many points you have.
+
+roles - This will tell you all roles that apply to your account.
+
+hello - This gets a return response from the bot to ensure it's listening.
+
+
+.......................................................................
+
+
