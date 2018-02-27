@@ -1,1 +1,1 @@
-{"initialStartup":"true","version":"0.1","points":false,"helloResponse":false,"adminCommands":false, "defaultGroup": "Member"}
+{"initialStartup":"true","version":"0.1","points":true,"helloResponse":false,"adminCommands":false,"defaultGroup":"New Members"}

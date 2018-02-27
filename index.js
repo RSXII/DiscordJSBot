@@ -52,10 +52,12 @@ Use !admin on / !admin off to enable / disable admin commands.
         
     }
 
+    //check if admin
+    if(message.member.roles.find("name", "Admin")){
+
     //enable / disable the settings
 
     if(command === `${prefix}points`){
-        console.log(args);
         if(args[0] === 'off'){
             botPrefs.points = false;
         }
@@ -64,13 +66,23 @@ Use !admin on / !admin off to enable / disable admin commands.
         }
        
     }
+    if(command === `${prefix}defaultgroup`){
+        botPrefs.defaultGroup = args.join(' ');
+    }
 
     // end settings section
     fs.writeFile('Data/botPrefs.json', JSON.stringify(botPrefs), (err) => {
         if(err) console.error(err);
     })
 
+        if(command === `${prefix}modtest`){
+            message.channel.send('You are an admin!');
+        }
+    }
+
     
+
+
 //this is the points system.
 if(botPrefs.points === true){
 
@@ -86,19 +98,13 @@ if(botPrefs.points === true){
     fs.writeFile('Data/userData.json', JSON.stringify(userData), (err) => {
         if(err) console.error(err);
     })
-    if(userData[sender.id].messagesSent === 15){
+    if(userData[sender.id].messagesSent === 5000){
         message.channel.send(`${sender} has leveled up!`)
     }
 }
     //end of points system
 
     if(!command.startsWith(prefix)) return;
-
-    if(message.member.roles.find("name", "SuperAdmin")){
-        if(command === `${prefix}modtest`){
-            message.channel.send('You are an admin!');
-        }
-    }
 
 
     if(command === `${prefix}userinfo`){
@@ -118,11 +124,9 @@ if(botPrefs.points === true){
 //adds users who join the server to the default 'Member' group.  This can be changed to match your default group.
 bot.on('guildMemberAdd', member => {
 
-    let role = member.guild.roles.find('name', 'Member');
+    let role = member.guild.roles.find('name', botPrefs.defaultGroup);
 
 member.addRole(role);
 })
 
 bot.login(botSettings.token);
-
-
