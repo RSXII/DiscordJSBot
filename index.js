@@ -148,7 +148,12 @@ Youtube ${botPrefs.youtubeLink}
 Twitch ${botPrefs.twitchLink}`);
     }
 
-    
+    if(command === `${prefix}givesword`){
+        message.channel.send(`Here's a sword ${sender}, try not to hurt yourself.`)
+    }
+    if(command === `${prefix}giveadena`){
+        message.channel.send(`${sender} has gained some adena!`)
+    }
 })
 //adds users who join the server to the default 'Member' group.  This can be changed to match your default group.
 bot.on('guildMemberAdd', member => {
