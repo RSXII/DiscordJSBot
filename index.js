@@ -4,6 +4,7 @@ const prefix = botSettings.prefix;
 const fs = require('fs');
 const userData = JSON.parse(fs.readFileSync('Data/userData.json', 'utf8'));
 const botPrefs = JSON.parse(fs.readFileSync('Data/botPrefs.json', 'utf8'));
+const helpCommands = fs.readFileSync('Data/help.txt', 'utf8');
 
 const bot = new Discord.Client({disableEveryone: true});
 
@@ -138,6 +139,13 @@ if(botPrefs.points === true){
     }
     if(command === `${prefix}hello`){
         message.reply("Hello there!");
+    }
+    if(command === `${prefix}help`){
+        message.author.sendMessage(helpCommands);
+        message.author.sendMessage(`Also don't forget to support ${botPrefs.streamerName} on
+Patreon ${botPrefs.patreon}
+Youtube ${botPrefs.youtubeLink}
+Twitch ${botPrefs.twitchLink}`);
     }
 
     
