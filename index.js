@@ -9,6 +9,8 @@ const bot = new Discord.Client({disableEveryone: true});
 
 bot.on("ready", async () => {
     console.log('Bot is ready! ${bot.user.username}');
+    bot.user.setStatus('Online');
+    bot.user.setGame('Waiting for commands...');
 
     try {
         let link = await bot.generateInvite(["ADMINISTRATOR"]);
@@ -56,7 +58,6 @@ Use !admin on / !admin off to enable / disable admin commands.
     if(message.member.roles.find("name", "Admin")){
 
     //enable / disable the settings
-
     if(command === `${prefix}points`){
         if(args[0] === 'off'){
             botPrefs.points = false;
@@ -66,10 +67,32 @@ Use !admin on / !admin off to enable / disable admin commands.
         }
        
     }
+
+    //the default group members are placed into upon joining.
     if(command === `${prefix}defaultgroup`){
         botPrefs.defaultGroup = args.join(' ');
     }
-
+    //the server owners youtube page
+    if(command === `${prefix}youtubeset`){
+        botPrefs.youtubeLink = args[0];
+    }
+    if(command === `${prefix}twitchset`){
+        botPrefs.twitchLink = args[0];
+    }
+    if(command === `${prefix}patreonset`){
+        botPrefs.patreon = args[0];
+    }
+    if(command === `${prefix}streamer`){
+        botPrefs.streamerName = args.join(' ');
+    }
+    if(command === `${prefix}liveyt`){
+        message.channel.send(`${botPrefs.streamerName} is live on YouTube!`);
+        message.channel.send(botPrefs.youtubeLink);
+    }
+    if(command === `${prefix}livetw`){
+        message.channel.send(`${botPrefs.streamerName} is live on Twitch!`);
+        message.channel.send(botPrefs.twitchLink);
+    }
     // end settings section
     fs.writeFile('Data/botPrefs.json', JSON.stringify(botPrefs), (err) => {
         if(err) console.error(err);
@@ -81,8 +104,6 @@ Use !admin on / !admin off to enable / disable admin commands.
     }
 
     
-
-
 //this is the points system.
 if(botPrefs.points === true){
 
@@ -110,7 +131,7 @@ if(botPrefs.points === true){
     if(command === `${prefix}userinfo`){
         let embed = new Discord.RichEmbed()
         .setAuthor(message.author.username)
-        .setDescription(args)
+        .setDescription("This user has " + userData[sender.id].messagesSent + " points")
         .setColor("#e0e234")
         .setTimestamp();
         message.channel.sendEmbed(embed);
