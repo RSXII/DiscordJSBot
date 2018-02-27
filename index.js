@@ -154,6 +154,9 @@ Twitch ${botPrefs.twitchLink}`);
     if(command === `${prefix}giveadena`){
         message.channel.send(`${sender} has gained some adena!`)
     }
+    if(command === `${prefix}botinfo`){
+        message.channel.send(`Version: ${botPrefs.version} ${botPrefs.developer} Github: ${botPrefs.github}`);
+    }
 })
 //adds users who join the server to the default 'Member' group.  This can be changed to match your default group.
 bot.on('guildMemberAdd', member => {
