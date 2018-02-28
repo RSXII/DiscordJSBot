@@ -5,6 +5,8 @@ const fs = require('fs');
 const userData = JSON.parse(fs.readFileSync('Data/userData.json', 'utf8'));
 const botPrefs = JSON.parse(fs.readFileSync('Data/botPrefs.json', 'utf8'));
 const helpCommands = fs.readFileSync('Data/help.txt', 'utf8');
+const modCommands = require('./Commands/mod.js');
+const pointsCommands = require('./Commands/points.js');
 
 const bot = new Discord.Client({disableEveryone: true});
 
@@ -55,76 +57,20 @@ Use !admin on / !admin off to enable / disable admin commands.
         
     }
 
-    //check if admin
-    if(message.member.roles.find("name", "Admin")){
+    //check if admin ///////////////////////////
+    
+        
+        modCommands(bot, message, command, args, botPrefs, userData);
 
-    //enable / disable the settings
-    if(command === `${prefix}points`){
-        if(args[0] === 'off'){
-            botPrefs.points = false;
-        }
-        if(args[0] === 'on'){
-            botPrefs.points = true;
-        }
-       
-    }
-
-    //the default group members are placed into upon joining.
-    if(command === `${prefix}defaultgroup`){
-        botPrefs.defaultGroup = args.join(' ');
-    }
-    //the server owners youtube page
-    if(command === `${prefix}youtubeset`){
-        botPrefs.youtubeLink = args[0];
-    }
-    if(command === `${prefix}twitchset`){
-        botPrefs.twitchLink = args[0];
-    }
-    if(command === `${prefix}patreonset`){
-        botPrefs.patreon = args[0];
-    }
-    if(command === `${prefix}streamer`){
-        botPrefs.streamerName = args.join(' ');
-    }
-    if(command === `${prefix}liveyt`){
-        message.channel.send(`${botPrefs.streamerName} is live on YouTube!`);
-        message.channel.send(botPrefs.youtubeLink);
-    }
-    if(command === `${prefix}livetw`){
-        message.channel.send(`${botPrefs.streamerName} is live on Twitch!`);
-        message.channel.send(botPrefs.twitchLink);
-    }
-    // end settings section
-    fs.writeFile('Data/botPrefs.json', JSON.stringify(botPrefs), (err) => {
-        if(err) console.error(err);
-    })
-
-        if(command === `${prefix}modtest`){
-            message.channel.send('You are an admin!');
-        }
-    }
+     //end check if admin ///////////////////////
 
     
-//this is the points system.
-if(botPrefs.points === true){
+    //this is the points system //////////////////
+    
 
-    if(command === `${prefix}points`){
-        message.channel.send('You have ' + userData[sender.id].messagesSent + ` points ${sender}!`)
-    }
-
-    if(!userData[sender.id]) userData[sender.id] = {
-        messagesSent: 0
-    }
-    userData[sender.id].messagesSent++;
-
-    fs.writeFile('Data/userData.json', JSON.stringify(userData), (err) => {
-        if(err) console.error(err);
-    })
-    if(userData[sender.id].messagesSent === 5000){
-        message.channel.send(`${sender} has leveled up!`)
-    }
-}
-    //end of points system
+        pointsCommands(bot, message, command, args, sender, botPrefs, userData);
+    
+    //end of points system /////////////////////
 
     if(!command.startsWith(prefix)) return;
 
