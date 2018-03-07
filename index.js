@@ -2,16 +2,19 @@ const botSettings = require("./botsettings.json");
 const Discord = require("discord.js");
 const prefix = botSettings.prefix;
 const fs = require('fs');
-const userData = JSON.parse(fs.readFileSync('Data/userData.json', 'utf8'));
-const botPrefs = JSON.parse(fs.readFileSync('Data/botPrefs.json', 'utf8'));
+const data = require('./dataExport.js');
 const helpCommands = fs.readFileSync('Data/help.txt', 'utf8');
+const modCommands = require('./Commands/mod.js');
+const pointsCommands = require('./Commands/points.js');
+const ds3Commands = require('./Commands/Games/DarkSouls3/commands.js');
 
 const bot = new Discord.Client({disableEveryone: true});
 
 bot.on("ready", async () => {
-    console.log('Bot is ready! ${bot.user.username}');
+    console.log(`Bot is ready! ${bot.user.username} version ${data.botPrefs.version}`);
     bot.user.setStatus('Online');
-    bot.user.setGame('Waiting for commands...');
+    bot.user.setActivity('Waiting for commands...');
+    bot.user.setAvatar('./image/brobot.png');
 
     try {
         let link = await bot.generateInvite(["ADMINISTRATOR"]);
@@ -55,84 +58,21 @@ Use !admin on / !admin off to enable / disable admin commands.
         
     }
 
-    //check if admin
-    if(message.member.roles.find("name", "Admin")){
-
-    //enable / disable the settings
-    if(command === `${prefix}points`){
-        if(args[0] === 'off'){
-            botPrefs.points = false;
-        }
-        if(args[0] === 'on'){
-            botPrefs.points = true;
-        }
-       
-    }
-
-    //the default group members are placed into upon joining.
-    if(command === `${prefix}defaultgroup`){
-        botPrefs.defaultGroup = args.join(' ');
-    }
-    //the server owners youtube page
-    if(command === `${prefix}youtubeset`){
-        botPrefs.youtubeLink = args[0];
-    }
-    if(command === `${prefix}twitchset`){
-        botPrefs.twitchLink = args[0];
-    }
-    if(command === `${prefix}patreonset`){
-        botPrefs.patreon = args[0];
-    }
-    if(command === `${prefix}streamer`){
-        botPrefs.streamerName = args.join(' ');
-    }
-    if(command === `${prefix}liveyt`){
-        message.channel.send(`${botPrefs.streamerName} is live on YouTube!`);
-        message.channel.send(botPrefs.youtubeLink);
-    }
-    if(command === `${prefix}livetw`){
-        message.channel.send(`${botPrefs.streamerName} is live on Twitch!`);
-        message.channel.send(botPrefs.twitchLink);
-    }
-    // end settings section
-    fs.writeFile('Data/botPrefs.json', JSON.stringify(botPrefs), (err) => {
-        if(err) console.error(err);
-    })
-
-        if(command === `${prefix}modtest`){
-            message.channel.send('You are an admin!');
-        }
-    }
+    //check if admin ////////////////////////////
+        modCommands(bot, message, command, args, data);
+     //end check if admin ///////////////////////
 
     
-//this is the points system.
-if(botPrefs.points === true){
+    //this is the points system /////////////////
+        pointsCommands(bot, message, command, args, sender, data);
+    //end of points system /////////////////////
 
-    if(command === `${prefix}points`){
-        message.channel.send('You have ' + userData[sender.id].messagesSent + ` points ${sender}!`)
-    }
-
-    if(!userData[sender.id]) userData[sender.id] = {
-        messagesSent: 0
-    }
-    userData[sender.id].messagesSent++;
-
-    fs.writeFile('Data/userData.json', JSON.stringify(userData), (err) => {
-        if(err) console.error(err);
-    })
-    if(userData[sender.id].messagesSent === 5000){
-        message.channel.send(`${sender} has leveled up!`)
-    }
-}
-    //end of points system
-
-    if(!command.startsWith(prefix)) return;
-
+    // if(!command.startsWith(prefix)) return;
 
     if(command === `${prefix}userinfo`){
         let embed = new Discord.RichEmbed()
         .setAuthor(message.author.username)
-        .setDescription("This user has " + userData[sender.id].messagesSent + " points")
+        .setDescription("This user has " + data.userData[sender.id].messagesSent + " points")
         .setColor("#e0e234")
         .setTimestamp();
         message.channel.sendEmbed(embed);
@@ -142,10 +82,10 @@ if(botPrefs.points === true){
     }
     if(command === `${prefix}help`){
         message.author.sendMessage(helpCommands);
-        message.author.sendMessage(`Also don't forget to support ${botPrefs.streamerName} on
-Patreon ${botPrefs.patreon}
-Youtube ${botPrefs.youtubeLink}
-Twitch ${botPrefs.twitchLink}`);
+        message.author.sendMessage(`Also don't forget to support ${data.botPrefs.streamerName} on
+Patreon ${data.botPrefs.patreon}
+Youtube ${data.botPrefs.youtubeLink}
+Twitch ${data.botPrefs.twitchLink}`);
     }
 
     if(command === `${prefix}givesword`){
@@ -155,13 +95,24 @@ Twitch ${botPrefs.twitchLink}`);
         message.channel.send(`${sender} has gained some adena!`)
     }
     if(command === `${prefix}botinfo`){
-        message.channel.send(`Version: ${botPrefs.version} ${botPrefs.developer} Github: ${botPrefs.github}`);
+        message.channel.send(`Version: ${data.botPrefs.version} ${data.botPrefs.developer} Github: ${data.botPrefs.github}`);
     }
+    if(command === `${prefix}moon`){
+        console.log(args.toString());
+        if(args.toString().toLowerCase() === 'prism,power,make,up!'){
+            message.channel.send(`Sailor ${sender}, transform!`);
+        }
+    }
+
+    //Game specific commands ///////////////
+    ds3Commands(bot, message, command, args, sender, data);
+
+    //End Game specific commands ///////////
 })
 //adds users who join the server to the default 'Member' group.  This can be changed to match your default group.
 bot.on('guildMemberAdd', member => {
 
-    let role = member.guild.roles.find('name', botPrefs.defaultGroup);
+    let role = member.guild.roles.find('name', data.botPrefs.defaultGroup);
 
 member.addRole(role);
 })
