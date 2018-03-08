@@ -11,3 +11,9 @@ There are many things planned still and they will be added in order of importanc
 I plan on adding integration with google's youtube api and twitch api to automatically pull new videos and announce livestreams sometime in the future.
 
 More planned features to come.
+
+## Requirements
+
+NodeJS is required to run the bot.
+
+https://nodejs.org/en/
